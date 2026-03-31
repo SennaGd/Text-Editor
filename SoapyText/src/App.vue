@@ -14,31 +14,43 @@ import { invoke } from "@tauri-apps/api/core";
 </template>
 
 <script lang="ts">
-// Saving
-// const focused = await appWindow.isFocused();
-// if (focused){
-//   console.log('f')
-// }
-
+let firstInvoke: Promise<string | null>  = invoke("read_file", {
+  filepath: "C:/Users/dev/Documents/TextEditorProSoapy/test.txt"
+});
 
 let text: string = "";
 let prevText: string = "";
+
+let commandRan: boolean = true
 let prevFocused: boolean = false;
-let textContent: string = "";
-let commandRan: boolean = false
+let firstBoot: boolean = false
 
-
-
-
+//  | if saved 
+// saved : true -> newText   ->  currentText  -> saved = false -> 
 await register("CONTROL + KEYS", (event) => {
   // if focused allow shortcut action!
   if (prevFocused) {
     console.log(`Shortcut ${event.shortcut} triggered`);
     console.log(text)
     commandRan = true;
-    invoke("overwrite_file", {
+    let written_data: Promise<string> = invoke("overwrite_file", {
         filepath: "C:/Users/dev/Documents/TextEditorProSoapy/test.txt", text: text
       });
+
+    written_data.then((iswritten) => {
+      console.log("Has Writtens:", text)
+    })
+    
+    let fetched_file_data: Promise<string | null>  = invoke("read_file", {
+      filepath: "C:/Users/dev/Documents/TextEditorProSoapy/test.txt"
+    });
+
+    fetched_file_data.then((ismade) => {
+      if (ismade != null){
+        console.log("changed text to: \n", ismade)
+        prevText = ismade
+      }
+    })
   }
 });
 setInterval(() => {
@@ -60,9 +72,28 @@ setInterval(() => {
     // });
   })
 
-
+  
   const contenteditable = document.getElementById("textarea");
-  if (contenteditable != null) {
+
+  // first boot set text.
+  if (firstBoot == false && contenteditable != null ) {
+    firstInvoke.then((textt)=>{
+      if (textt != null){
+        contenteditable.innerText = textt 
+        text = textt
+      } else {
+      contenteditable.innerText = "Open file like wizzard!"
+      }
+    })
+    firstBoot = true
+  }
+
+  // on command ran
+  if (contenteditable != null && commandRan) {
+    contenteditable.innerText = text 
+    commandRan = false;
+  } 
+  if (contenteditable != null && commandRan == false) {
 
     prevText = contenteditable.innerText;
   } else {

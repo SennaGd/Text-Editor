@@ -10,9 +10,10 @@ main{
 #textarea {
     width: 100vw;
     height:100vh;
-    color:rgb(195, 117, 255);
+    color:rgb(255, 255, 255);
     font-size: x-large;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     background-color: rgba(0, 0, 0, 0.478);
     padding-top:10px;
+    padding-left:10px;
 }
