@@ -1,15 +1,18 @@
-template, main{
+main{
     padding: 0px;
     margin: 0;
-    background-color: red;
 }
 
-textarea {
-    display: inline;
+#textarea {
+    height:95vh;
+}
+
+#textarea {
     width: 100vw;
     height:100vh;
-    color:white;
-    font-size: large;
-    font-family: 'Courier New', Courier, monospace;
-    background-color: black;
+    color:rgb(195, 117, 255);
+    font-size: x-large;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    background-color: rgba(0, 0, 0, 0.478);
+    padding-top:10px;
 }

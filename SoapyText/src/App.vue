@@ -1,38 +1,81 @@
 <script setup lang="ts">
-import "./style.css"
-
+import "./style.css";
+import { register } from "@tauri-apps/plugin-global-shortcut";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+// window successfully created
 // import { ref } from "vue";
-// import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 </script>
-
 
 <template>
   <main class="">
-    <textarea id="textarea" class="bg-red-500" cols="50"/>
+    <div id="textarea" contenteditable="true" cols="50" />
   </main>
 </template>
 
 <script lang="ts">
-  let text: string = ""
-  let prevText: string = ""
+// Saving
+// const focused = await appWindow.isFocused();
+// if (focused){
+//   console.log('f')
+// }
 
+
+let text: string = "";
+let prevText: string = "";
+let prevFocused: boolean = false;
+let textContent: string = "";
+let commandRan: boolean = false
+
+
+
+
+await register("CONTROL + KEYS", (event) => {
+  // if focused allow shortcut action!
+  if (prevFocused) {
+    console.log(`Shortcut ${event.shortcut} triggered`);
+    console.log(text)
+    commandRan = true;
+    invoke("overwrite_file", {
+        filepath: "C:/Users/dev/Documents/TextEditorProSoapy/test.txt", text: text
+      });
+  }
+});
+setInterval(() => {
+  const focused = getCurrentWindow().isFocused();
   
-  setInterval(() => {
-    const input = document.getElementById('textarea') as HTMLInputElement | null;
-
-    if (input != null) {
-      prevText = input.value
+  // if focused : enabled ke ybind.
+  focused.then((isfocused) => {
+    if (isfocused) {
+      if (prevFocused == false) {
+            prevFocused = true
+            console.log("focused",isfocused);
+          } 
     } else {
-      prevText = ""
-      text = ""
+      prevFocused = false;
     }
+    
+    // register('Fn+LEFT', () => {
+    //   console.log('Save Keybind');
+    // });
+  })
 
-    if(text != prevText) {
-      text = prevText
-      
-      console.log("Text:" + text)  
-    }
-  }, 1000);
+
+  const contenteditable = document.getElementById("textarea");
+  if (contenteditable != null) {
+
+    prevText = contenteditable.innerText;
+  } else {
+    prevText = "";
+    text = "";
+  }
+
+  if (text != prevText) {
+    text = prevText;
+
+    console.log("Text:" + text);
+  }
+}, 500);
 
 </script>
 
@@ -48,14 +91,7 @@ import "./style.css"
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-
 }
-
-
-
-
-
-
 
 a {
   font-weight: 500;
@@ -100,7 +136,6 @@ button {
   outline: none;
 }
 
-
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
@@ -120,5 +155,4 @@ button {
     background-color: #0f0f0f69;
   }
 }
-
 </style>
