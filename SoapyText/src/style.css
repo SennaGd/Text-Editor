@@ -1,19 +1,29 @@
-main{
-    padding: 0px;
+html, body, #app {
+    background-color: darkslategray;
     margin: 0;
+    padding: -10px;
+    width: 100%;
+    height: 100%;
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
 }
-
 #textarea {
     height:95vh;
 }
 
+.main {
+    height:fit-content;
+}
 #textarea {
-    width: 100vw;
-    height:100vh;
+    width:1000vw;
+    min-height:100000vh;
+    max-height: fit-content;
     color:rgb(255, 255, 255);
     font-size: x-large;
+    border:  0px solid transparent;
+    background-color: #181A1F;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    background-color: rgba(0, 0, 0, 0.478);
+    border: transparent;
     padding-top:10px;
     padding-left:10px;
 }

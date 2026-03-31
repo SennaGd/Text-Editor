@@ -8,25 +8,22 @@ import { invoke } from "@tauri-apps/api/core";
 </script>
 
 <template>
-  <main class="">
-    <div id="textarea" contenteditable="true" cols="50" />
+  <main class="main">
+    <div id="textarea" contenteditable="true" spellCheck="false"/>
   </main>
 </template>
 
 <script lang="ts">
-let firstInvoke: Promise<string | null>  = invoke("read_file", {
-  filepath: "C:/Users/dev/Documents/TextEditorProSoapy/test.txt"
-});
-
 let text: string = "";
 let prevText: string = "";
 
 let commandRan: boolean = true
 let prevFocused: boolean = false;
-let firstBoot: boolean = false
 
-//  | if saved 
-// saved : true -> newText   ->  currentText  -> saved = false -> 
+//TODO: Select folder
+//TODO: 
+
+
 await register("CONTROL + KEYS", (event) => {
   // if focused allow shortcut action!
   if (prevFocused) {
@@ -34,7 +31,7 @@ await register("CONTROL + KEYS", (event) => {
     console.log(text)
     commandRan = true;
     let written_data: Promise<string> = invoke("overwrite_file", {
-        filepath: "C:/Users/dev/Documents/TextEditorProSoapy/test.txt", text: text
+        filepath: "C:/Test/test.txt", text: text
       });
 
     written_data.then((iswritten) => {
@@ -42,7 +39,7 @@ await register("CONTROL + KEYS", (event) => {
     })
     
     let fetched_file_data: Promise<string | null>  = invoke("read_file", {
-      filepath: "C:/Users/dev/Documents/TextEditorProSoapy/test.txt"
+      filepath: "C:/Test/test.txt"
     });
 
     fetched_file_data.then((ismade) => {
@@ -72,25 +69,13 @@ setInterval(() => {
     // });
   })
 
-  
-  const contenteditable = document.getElementById("textarea");
 
-  // first boot set text.
-  if (firstBoot == false && contenteditable != null ) {
-    firstInvoke.then((textt)=>{
-      if (textt != null){
-        contenteditable.innerText = textt 
-        text = textt
-      } else {
-      contenteditable.innerText = "Open file like wizzard!"
-      }
-    })
-    firstBoot = true
-  }
+  const contenteditable = document.getElementById("textarea");
 
   // on command ran
   if (contenteditable != null && commandRan) {
     contenteditable.innerText = text 
+    contenteditable
     commandRan = false;
   } 
   if (contenteditable != null && commandRan == false) {
