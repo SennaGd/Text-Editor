@@ -1,0 +1,15 @@
+template, main{
+    padding: 0px;
+    margin: 0;
+    background-color: red;
+}
+
+textarea {
+    display: inline;
+    width: 100vw;
+    height:100vh;
+    color:white;
+    font-size: large;
+    font-family: 'Courier New', Courier, monospace;
+    background-color: black;
+}
