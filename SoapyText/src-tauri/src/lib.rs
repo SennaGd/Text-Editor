@@ -12,12 +12,8 @@ fn read_file(filepath: &str) -> String {
 }
 
 #[tauri::command]
-fn overwrite_file(filepath: &str, text: &str) -> String {
+fn overwrite_file(filepath: &str, text: &str) {
     let _ = fs::write(filepath, text);
-    let contents = fs::read_to_string(filepath);
-    let unwrapped_contents: String = contents.unwrap();
-
-    return unwrapped_contents;
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

@@ -1,31 +1,59 @@
-const text: string = "Hello this is a text \n\n with 2 spaces and \n one space after those 2!!"
-const rawText: string = JSON.stringify(text)
-const rawNewLine: string = JSON.stringify('\n').slice(1,3)
-const textLength: number = text.length
+function RemoveDoubleNewLines(text:string): string {
+    let sliceArray: [any] = [[0,0]]
 
+     let rawText: string = JSON.stringify(text);
+    const textLength: number = text.length      
+    const rawNewLine: string = JSON.stringify('\n').slice(1,3)
 
-console.log(rawNewLine)
-let lastSliceIndex: number = 0;
-let firstSliceIndex: number = 0;
-for (let i = 0; i < textLength; i++){
-    let twoIndexes: string = rawText[i]+rawText[i+1]
-    let previousFirstSlice = firstSliceIndex
+    let firstSliceIndex: number = 0
+    let lastSliceIndex: number = 0
 
-    if (twoIndexes.slice(0,2) == rawNewLine) {
+    // parses text.
+    //
+    // Creates sliceArray indexes [ sliceposStart, sliceposEnd ]
+    for (let i = 0; i < textLength; i++) {                  
+        let twoIndexes: string = rawText[i]+rawText[i+1]    
         firstSliceIndex = i
-        if (firstSliceIndex == lastSliceIndex){
-            console.log(firstSliceIndex, lastSliceIndex)
-        }
         lastSliceIndex = i+2
 
-        
-        console.log("First Slice Index: ", firstSliceIndex)
-        console.log("Last Slice Index: ", lastSliceIndex)
+        // check if slice is newLine | append indexes into sliceArray.
+        if (twoIndexes.slice(0,2) == rawNewLine) {          
+            sliceArray.push([firstSliceIndex, lastSliceIndex])                       
+        }
     }
+
+    // Comparing slice[ _, Y ] > nextSlice[ X, _ ] | if (\n == 2)
+    for (let i = 0; i < sliceArray.length; i++) {
+        if (sliceArray[i+1] != null) {        
+            if (sliceArray[i][1] == sliceArray[i+1][0]) {
+                console.log(sliceArray[i], sliceArray[i+1])
+
+                // Slices one \n away.
+                rawText = rawText.slice(1, sliceArray[i][1]) + rawText.slice(sliceArray[i+1][1])
+            }
+        }
+    }
+    
+    console.log("\nRemoved double spaces! \n")
+
+    //Replace \n with <br>
+    for (let i = 0; i < textLength; i++) {
+        let twoIndexes: string = rawText[i]+rawText[i+1]   
+        if (twoIndexes == rawNewLine) {
+            console.log("Newline slice index: ", i, i+2)
+            
+            
+            rawText = rawText.slice(0, i-1) + " <br>" + rawText.slice(i+2)
+            console.log(rawText)
+        }
+    }
+
+
+    // console.log("\n"+rawText)
+    return text
 }
 
-console.log("Slice", rawText.slice(22, 24))
+let unparsedText = "Hello this is a text \nwith 2 spaces and \n\none space after those 2!!"
+let parsedText = RemoveDoubleNewLines(unparsedText)
 
 
-console.log("Text Length: "+textLength)
-console.log()

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import "./style.css";
+import "./test/StringParser.ts"
+
 import { register } from "@tauri-apps/plugin-global-shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-dialog";
-// window successfully created
-// import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 </script>
 
@@ -15,81 +15,67 @@ import { invoke } from "@tauri-apps/api/core";
   </main>
 </template>
 
-  <script lang="ts">
-  let text: string = "";
-  let prevText: string = "4";
+<script lang="ts">
+  let text: string = "";                // text inside input field
+  let prevText: string = "";            // previous text (prevent multiple prints)         
 
-  let commandRan: boolean = false;
-  let prevFocused: boolean = false;
-  let selectedNewFile: boolean = false;
+  let saveCommandRan: boolean = false;  // save-command status
+  let prevFocused: boolean = false;     // window focused status
+  let openedFile: boolean = false;      // used for reading the file | if filepath is determined
 
-  //TODO: Select folder
-  //TODO:
-  let filepath: string | null;
+  let filepath: string | null;          // func -> openfile (writes) to var 'filepath'
+  
+  // fetches the filepath.
   async function openfile() {
-    // Open explorer.
+    // open file explorer | fetch filepath 
     filepath = await open({
       multiple: false,
       directory: false,
     });
 
+    // fetch file contents | read file
     let fetched_file_data: Promise<string | null> = invoke("read_file", {
       filepath: filepath,
     });
 
-    fetched_file_data.then((ismade) => {
-      if (ismade != null) {
-        console.log("changed text to: \n", ismade);
-        prevText = ismade;
+    // insert text into 'contentEditable' | 
+    fetched_file_data.then((fileContents) => {
+      if (fileContents != null) {
+        console.log("fetched data from: ", filepath);
+        console.log("fetched data from: ", fileContents);
+        
+        // prevText = fileContents;
       }
     });
-    selectedNewFile = true;
 
+    openedFile = true;  
   }
 
+
+  // CTRL + S = SAVE | Write to file
   await register("CONTROL + KEYS", (event) => {
     // if focused allow shortcut action!
     if (prevFocused) {
       console.log(String.raw ``+ text + ``)
-      if (filepath != null) {
 
-        let written_data: Promise<string> = invoke("overwrite_file", {
+      if (filepath != null) {
+        invoke("overwrite_file", {
           filepath: filepath,
           text: text,
         });
 
-        written_data.then((iswritten) => {
-          text = iswritten
-        });
-
-        let fetched_file_data: Promise<string | null> = invoke("read_file", {
-          filepath: filepath,
-        });
-
-        fetched_file_data.then((ismade) => {
-          if (ismade != null) {
-            console.log("T"+text)
-            let textLength: number = text.length
-            if (textLength >= 2) {
-              let slice:string = text.slice(0, 1)
-
-              if (slice == "\n"){
-                let newText: string = text.slice(2, textLength)
-                console.log(newText)
-                text = newText
-              }
-            }
-          }
-        });
-        commandRan = true;
+        console.log("Text: "+text)
+        
+        saveCommandRan = true;
       }
     }
   });
 
-
+  // runs every 100 updates.
   setInterval(() => {
     const focused = getCurrentWindow().isFocused();
-    // if window is focused : enabled keybind.
+
+    // if window is focused : enabled save keybind.
     focused.then((isFocused) => {
       if (isFocused) {
         if (prevFocused == false) {
@@ -101,21 +87,19 @@ import { invoke } from "@tauri-apps/api/core";
       }
     });
 
+    // fetch text from text area. 
     const contentEditable = document.getElementById("textarea");
 
-    // if file select
-    if (contentEditable != null && selectedNewFile) {
+    // if file selected
+    if (contentEditable != null && openedFile) {
       contentEditable.innerText = prevText;
-      console.log("Selectedfiletext: "+ prevText)
-      selectedNewFile = false
+      console.log("File Openened")
+
+      openedFile = false
     }
-    // on command ran
-    if (contentEditable != null && commandRan) {
-      contentEditable.innerText = text;
-      commandRan = false;
-    }
+    
     // update prevText
-    if (contentEditable != null && commandRan == false) {
+    if (contentEditable != null && saveCommandRan == false) {
       prevText = contentEditable.innerText;
     } 
 
