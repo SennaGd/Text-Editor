@@ -2,6 +2,7 @@
 import "./style.css";
 import { register } from "@tauri-apps/plugin-global-shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { open } from "@tauri-apps/plugin-dialog";
 // window successfully created
 // import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
@@ -9,90 +10,121 @@ import { invoke } from "@tauri-apps/api/core";
 
 <template>
   <main class="main">
-    <div id="textarea" contenteditable="true" spellCheck="false"/>
+    <div><button @click="openfile">Open File</button></div>
+    <p id="textarea" contenteditable="true" spellCheck="false" />
   </main>
 </template>
 
-<script lang="ts">
-let text: string = "";
-let prevText: string = "";
+  <script lang="ts">
+  let text: string = "";
+  let prevText: string = "4";
 
-let commandRan: boolean = true
-let prevFocused: boolean = false;
+  let commandRan: boolean = false;
+  let prevFocused: boolean = false;
+  let selectedNewFile: boolean = false;
 
-//TODO: Select folder
-//TODO: 
+  //TODO: Select folder
+  //TODO:
+  let filepath: string | null;
+  async function openfile() {
+    // Open explorer.
+    filepath = await open({
+      multiple: false,
+      directory: false,
+    });
 
-
-await register("CONTROL + KEYS", (event) => {
-  // if focused allow shortcut action!
-  if (prevFocused) {
-    console.log(`Shortcut ${event.shortcut} triggered`);
-    console.log(text)
-    commandRan = true;
-    let written_data: Promise<string> = invoke("overwrite_file", {
-        filepath: "C:/Test/test.txt", text: text
-      });
-
-    written_data.then((iswritten) => {
-      console.log("Has Writtens:", text)
-    })
-    
-    let fetched_file_data: Promise<string | null>  = invoke("read_file", {
-      filepath: "C:/Test/test.txt"
+    let fetched_file_data: Promise<string | null> = invoke("read_file", {
+      filepath: filepath,
     });
 
     fetched_file_data.then((ismade) => {
-      if (ismade != null){
-        console.log("changed text to: \n", ismade)
-        prevText = ismade
+      if (ismade != null) {
+        console.log("changed text to: \n", ismade);
+        prevText = ismade;
       }
-    })
+    });
+    selectedNewFile = true;
+
   }
-});
-setInterval(() => {
-  const focused = getCurrentWindow().isFocused();
-  
-  // if focused : enabled ke ybind.
-  focused.then((isfocused) => {
-    if (isfocused) {
-      if (prevFocused == false) {
-            prevFocused = true
-            console.log("focused",isfocused);
-          } 
-    } else {
-      prevFocused = false;
+
+  await register("CONTROL + KEYS", (event) => {
+    // if focused allow shortcut action!
+    if (prevFocused) {
+      console.log(String.raw ``+ text + ``)
+      if (filepath != null) {
+
+        let written_data: Promise<string> = invoke("overwrite_file", {
+          filepath: filepath,
+          text: text,
+        });
+
+        written_data.then((iswritten) => {
+          text = iswritten
+        });
+
+        let fetched_file_data: Promise<string | null> = invoke("read_file", {
+          filepath: filepath,
+        });
+
+        fetched_file_data.then((ismade) => {
+          if (ismade != null) {
+            console.log("T"+text)
+            let textLength: number = text.length
+            if (textLength >= 2) {
+              let slice:string = text.slice(0, 1)
+
+              if (slice == "\n"){
+                let newText: string = text.slice(2, textLength)
+                console.log(newText)
+                text = newText
+              }
+            }
+          }
+        });
+        commandRan = true;
+      }
     }
-    
-    // register('Fn+LEFT', () => {
-    //   console.log('Save Keybind');
-    // });
-  })
+  });
 
 
-  const contenteditable = document.getElementById("textarea");
+  setInterval(() => {
+    const focused = getCurrentWindow().isFocused();
+    // if window is focused : enabled keybind.
+    focused.then((isFocused) => {
+      if (isFocused) {
+        if (prevFocused == false) {
+          prevFocused = true;
+          console.log("focused", isFocused);
+        }
+      } else {
+        prevFocused = false;
+      }
+    });
 
-  // on command ran
-  if (contenteditable != null && commandRan) {
-    contenteditable.innerText = text 
-    contenteditable
-    commandRan = false;
-  } 
-  if (contenteditable != null && commandRan == false) {
+    const contentEditable = document.getElementById("textarea");
 
-    prevText = contenteditable.innerText;
-  } else {
-    prevText = "";
-    text = "";
-  }
+    // if file select
+    if (contentEditable != null && selectedNewFile) {
+      contentEditable.innerText = prevText;
+      console.log("Selectedfiletext: "+ prevText)
+      selectedNewFile = false
+    }
+    // on command ran
+    if (contentEditable != null && commandRan) {
+      contentEditable.innerText = text;
+      commandRan = false;
+    }
+    // update prevText
+    if (contentEditable != null && commandRan == false) {
+      prevText = contentEditable.innerText;
+    } 
 
-  if (text != prevText) {
-    text = prevText;
+    if (text != prevText) {
+      text = prevText;
 
-    console.log("Text:" + text);
-  }
-}, 500);
-
+      console.log("Text:" + text);
+    }
+  }, 100);
 </script>
 
 <style>
