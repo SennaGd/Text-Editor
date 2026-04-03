@@ -1,11 +1,14 @@
 <script setup lang="ts">
+// local imports
 import "./style.css";
-import "./test/StringParser.ts"
+import { RemoveDoubleNewLines } from "./StringParser.ts"
 
+// package imports
 import { register } from "@tauri-apps/plugin-global-shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
+
 </script>
 
 <template>
@@ -16,11 +19,12 @@ import { invoke } from "@tauri-apps/api/core";
 </template>
 
 <script lang="ts">
+  let innerText: string = ""            // text fetched from htmlElement 
   let text: string = "";                // text inside input field
   let prevText: string = "";            // previous text (prevent multiple prints)         
 
   let saveCommandRan: boolean = false;  // save-command status
-  let prevFocused: boolean = false;     // window focused status
+  let windowFocused: boolean = false;     // window focused status
   let openedFile: boolean = false;      // used for reading the file | if filepath is determined
 
   let filepath: string | null;          // func -> openfile (writes) to var 'filepath'
@@ -51,23 +55,25 @@ import { invoke } from "@tauri-apps/api/core";
     openedFile = true;  
   }
 
+  function checkHTMLElement(idName: string){
+    if (document.getElementById(idName) != null){
+      return true
+    } else {
+      return false
+    }
+  }
 
   // CTRL + S = SAVE | Write to file
   await register("CONTROL + KEYS", (event) => {
-    // if focused allow shortcut action!
-    if (prevFocused) {
-      console.log(String.raw ``+ text + ``)
-
-      if (filepath != null) {
-        invoke("overwrite_file", {
-          filepath: filepath,
-          text: text,
-        });
-
-        console.log("Text: "+text)
-        
-        saveCommandRan = true;
-      }
+    // if windowFocused | allow shortcut action
+    if (windowFocused && filepath != null) {
+      // overwrite file
+      invoke("overwrite_file", {
+        filepath: filepath,
+        text: text,
+      });
+      
+      // saveCommandRan = true;
     }
   });
 
@@ -78,37 +84,39 @@ import { invoke } from "@tauri-apps/api/core";
     // if window is focused : enabled save keybind.
     focused.then((isFocused) => {
       if (isFocused) {
-        if (prevFocused == false) {
-          prevFocused = true;
+        if (windowFocused == false) {
+          windowFocused = true;
           console.log("focused", isFocused);
         }
       } else {
-        prevFocused = false;
+        windowFocused = false;
       }
     });
 
     // fetch text from text area. 
     const contentEditable = document.getElementById("textarea");
 
+    // check if contentEditable exists
+    if (contentEditable != null) {
+      innerText = contentEditable.innerText // assinging 'innertText' to contents innerText
+    }
+    
     // if file selected
-    if (contentEditable != null && openedFile) {
-      contentEditable.innerText = prevText;
+    if (openedFile) {
       console.log("File Openened")
-
+      innerText = prevText;
       openedFile = false
     }
     
     // update prevText
-    if (contentEditable != null && saveCommandRan == false) {
-      prevText = contentEditable.innerText;
-    } 
+    // if (saveCommandRan == false) {
+      text = RemoveDoubleNewLines(innerText);
+    // } 
 
-    if (text != prevText) {
-      text = prevText;
 
-      console.log("Text:" + text);
-    }
-  }, 100);
+    console.log("Text:" + JSON.stringify(text)); // current text
+
+  }, 500);
 </script>
 
 <style>

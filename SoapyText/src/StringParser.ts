@@ -1,4 +1,4 @@
-function RemoveDoubleNewLines(text:string): string {
+export function RemoveDoubleNewLines(text:string): string {
     let sliceArray: [any] = [[0,0]]
 
      let rawText: string = JSON.stringify(text);
@@ -34,19 +34,7 @@ function RemoveDoubleNewLines(text:string): string {
         }
     }
     
-    console.log("\nRemoved double spaces! \n")
 
-    //Replace \n with <br>
-    for (let i = 0; i < textLength; i++) {
-        let twoIndexes: string = rawText[i]+rawText[i+1]   
-        if (twoIndexes == rawNewLine) {
-            console.log("Newline slice index: ", i, i+2)
-            
-            
-            rawText = rawText.slice(0, i-1) + " <br>" + rawText.slice(i+2)
-            console.log(rawText)
-        }
-    }
 
 
     // console.log("\n"+rawText)
