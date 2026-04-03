@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 line 1 : x
 
 
 line 3 : y
+=======
+Hello<div>s</div><div></div><div>e</div>
+>>>>>>> 2c3fbb7f9cc22a816d69113ba2870f51b95103d5

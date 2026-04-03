@@ -14,7 +14,7 @@ import { invoke } from "@tauri-apps/api/core";
 <template>
   <main class="main">
     <div><button @click="openfile">Open File</button></div>
-    <p id="textarea" contenteditable="true" spellCheck="false" />
+    <p id="textarea" contenteditable spellCheck="false" />
   </main>
 </template>
 
@@ -22,7 +22,11 @@ import { invoke } from "@tauri-apps/api/core";
   let innerText: string = ""            // text fetched from htmlElement 
   let text: string = "";                // text inside input field
   let prevText: string = "";            // previous text (prevent multiple prints)         
+  let field_text: string = "";          // text of the input field
+  let previous_field_text: string = ""  // previous text of input field
 
+  let newText: string = "";             // parsed text for writing to file
+  let raw_text: string = "";            // raw var 'field_text' contents
   let saveCommandRan: boolean = false;  // save-command status
   let windowFocused: boolean = false;     // window focused status
   let openedFile: boolean = false;      // used for reading the file | if filepath is determined
@@ -55,7 +59,7 @@ import { invoke } from "@tauri-apps/api/core";
     openedFile = true;  
   }
 
-  function checkHTMLElement(idName: string){
+  function checkHTMLElement(idName: string) {
     if (document.getElementById(idName) != null){
       return true
     } else {
@@ -74,8 +78,7 @@ import { invoke } from "@tauri-apps/api/core";
       });
       
       // saveCommandRan = true;
-    }
-  });
+  }});
 
   // runs every 100 updates.
   setInterval(() => {
@@ -93,8 +96,20 @@ import { invoke } from "@tauri-apps/api/core";
       }
     });
 
-    // fetch text from text area. 
-    const contentEditable = document.getElementById("textarea");
+
+
+    const contentEditable = document.getElementById("textarea")
+
+    if (contentEditable != null) {
+      field_text = contentEditable.innerHTML
+      
+      raw_text = JSON.stringify(field_text);
+      raw_text = raw_text.slice(1, raw_text.length-1) 
+      raw_text = raw_text.replaceAll("<br>", "")
+      raw_text = raw_text.replaceAll("<br>", "")
+      
+      field_text = JSON.parse(raw_text)            // Parsed text
+    }
 
     // check if contentEditable exists
     if (contentEditable != null) {
@@ -102,12 +117,18 @@ import { invoke } from "@tauri-apps/api/core";
     }
     
     // if file selected
+<<<<<<< HEAD
     if (openedFile) {
+=======
+    if (contentEditable != null && openedFile) {
+      contentEditable.innerText = field_text;
+>>>>>>> 2c3fbb7f9cc22a816d69113ba2870f51b95103d5
       console.log("File Openened")
       innerText = prevText;
       openedFile = false
     }
     
+<<<<<<< HEAD
     // update prevText
     // if (saveCommandRan == false) {
       text = RemoveDoubleNewLines(innerText);
@@ -117,6 +138,11 @@ import { invoke } from "@tauri-apps/api/core";
     console.log("Text:" + JSON.stringify(text)); // current text
 
   }, 500);
+=======
+
+    
+  }, 100);
+>>>>>>> 2c3fbb7f9cc22a816d69113ba2870f51b95103d5
 </script>
 
 <style>
