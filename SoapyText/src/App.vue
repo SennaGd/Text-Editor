@@ -11,13 +11,16 @@ import { invoke } from "@tauri-apps/api/core";
 <template>
   <main class="main">
     <div><button @click="openfile">Open File</button></div>
-    <p id="textarea" contenteditable="true" spellCheck="false" />
+    <p id="textarea" contenteditable spellCheck="false" />
   </main>
 </template>
 
 <script lang="ts">
-  let text: string = "";                // text inside input field
-  let prevText: string = "";            // previous text (prevent multiple prints)         
+  let field_text: string = "";          // text of the input field
+  let previous_field_text: string = ""  // previous text of input field
+
+  let newText: string = "";             // parsed text for writing to file
+  let raw_text: string = "";            // raw var 'field_text' contents
 
   let saveCommandRan: boolean = false;  // save-command status
   let prevFocused: boolean = false;     // window focused status
@@ -55,19 +58,14 @@ import { invoke } from "@tauri-apps/api/core";
   // CTRL + S = SAVE | Write to file
   await register("CONTROL + KEYS", (event) => {
     // if focused allow shortcut action!
-    if (prevFocused) {
-      console.log(String.raw ``+ text + ``)
+    if (prevFocused && filepath != null) {
+      invoke("overwrite_file", {
+        filepath: filepath,
+        text: field_text,
+      });
 
-      if (filepath != null) {
-        invoke("overwrite_file", {
-          filepath: filepath,
-          text: text,
-        });
-
-        console.log("Text: "+text)
-        
-        saveCommandRan = true;
-      }
+      
+      saveCommandRan = true;
     }
   });
 
@@ -87,27 +85,31 @@ import { invoke } from "@tauri-apps/api/core";
       }
     });
 
-    // fetch text from text area. 
-    const contentEditable = document.getElementById("textarea");
+
+
+    const contentEditable = document.getElementById("textarea")
+
+    if (contentEditable != null) {
+      field_text = contentEditable.innerHTML
+      
+      raw_text = JSON.stringify(field_text);
+      raw_text = raw_text.slice(1, raw_text.length-1) 
+      raw_text = raw_text.replaceAll("<br>", "")
+      raw_text = raw_text.replaceAll("<br>", "")
+      
+      field_text = JSON.parse(raw_text)            // Parsed text
+    }
 
     // if file selected
     if (contentEditable != null && openedFile) {
-      contentEditable.innerText = prevText;
+      contentEditable.innerText = field_text;
       console.log("File Openened")
 
       openedFile = false
     }
     
-    // update prevText
-    if (contentEditable != null && saveCommandRan == false) {
-      prevText = contentEditable.innerText;
-    } 
 
-    if (text != prevText) {
-      text = prevText;
-
-      console.log("Text:" + text);
-    }
+    
   }, 100);
 </script>
 
