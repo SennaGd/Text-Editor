@@ -13,7 +13,6 @@ import { invoke } from "@tauri-apps/api/core";
   <main class="main">
     <div>
       <button @click="openFile()">Open File</button>
-      <button onclick="changeBold()">Bold selected text</button>
     </div>
     <p id="textarea" contenteditable spellCheck="false" />
   </main>
@@ -91,7 +90,7 @@ async function parseText(): Promise<string> {
 // fetches the html text (assigns var 'field_text')
 onkeydown = (key) => {
   if (prevKey == "Control" && key.key == "s") {
-    // get filepath if null
+    // get filepath if none
     if (filepath == null) {
       console.log("getting filepath")
       filepath = getFilepath()
