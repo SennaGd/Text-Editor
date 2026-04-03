@@ -1,117 +1,133 @@
 <script setup lang="ts">
 // local imports
 import "./style.css";
-import { unraw } from "./unraw.ts"
+import { unraw } from "./unraw.ts";
 
 // package imports
-import { register } from "@tauri-apps/plugin-global-shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
-
 </script>
 
 <template>
   <main class="main">
-    <div><button @click="openfile">Open File</button></div>
+    <div>
+      <button @click="openFile()">Open File</button>
+      <button onclick="changeBold()">Bold selected text</button>
+    </div>
     <p id="textarea" contenteditable spellCheck="false" />
   </main>
 </template>
 
 <script lang="ts">
-  const rawNewLines: string = JSON.stringify('\n\n').slice(1,5)
-  const rawNewLine: string = JSON.stringify('\n').slice(1,3)
+//-------------------------------------------- Variables -------------------------------------------\\
+// text parsing vars
+const rawNewLines: string = JSON.stringify("\n\n").slice(1, 5);
+const rawNewLine: string = JSON.stringify("\n").slice(1, 3);
 
-  let inner_text: string = ""            // text fetched from htmlElement 
-  let field_text: string = "";          // text of the input field
-  let retrieved_text: string = "";      // text retreived from opened_file
-  let raw_text: string = "";            // raw var 'field_text' contents
-  let opened_file: boolean = false;      // checks if file has been opened
-  let window_focused: boolean = false;   // window focused status
-  let filepath: string | null;          // func -> openfile (writes) to var 'filepath'
-  
+// input field vars
+let inner_text: string = "";                                  // text fetched from htmlElement
+let field_text: string = "";                                  // text of the input field
+let parsedText: Promise<string>;                              // text that will be saved
+let contentEditable = document.getElementById("textarea");    // textarea
 
-  // fetches the filepath.
-  async function openfile() {
-    // open file explorer | fetch filepath 
-    filepath = await open({
-      multiple: false,
-      directory: false,
-    });
+// file vars
+let filepath: Promise<string | null>;                         // func -> openfile (writes) to var 'filepath'
 
-    // fetch file contents | read file
-    let fetched_file_data: Promise<string | null> = invoke("read_file", {
-      filepath: filepath,
-    });
+// window vars
+const focused = getCurrentWindow().isFocused();               // window focused state
+let window_focused: boolean = false;                          // window focused status
 
-    // assign file_contents to retrieved_text 
-    fetched_file_data.then((file_contents) => {
-      if (file_contents != null) {
-        opened_file = true;
-        retrieved_text = file_contents
-      }
-    });
+// input vars | eventlisteners
+let prevKey: string = ""
+
+//--------------------------------------------- Logic ---------------------------------------------\\
+
+// puts file-contents to window
+async function openFile() {
+  if (filepath == null) {
+    filepath = getFilepath() // assign filepath
   }
 
-  // CTRL + S = SAVE | Write to file
-  await register("CONTROL + KEYS", (event) => {
-    // if windowFocused | allow shortcut action
-    if (window_focused && filepath != null) {
-      // overwrite file
-      invoke("overwrite_file", {
-        filepath: filepath,
-        text: field_text,
-      });
-    }
-  });
-
-  // runs every 100 updates.
-  setInterval(() => {
-    const focused = getCurrentWindow().isFocused();
-
-    // if window is focused : enabled save keybind.
-    focused.then((is_focused) => {
-      if (is_focused) {
-        if (window_focused == false) {
-          window_focused = true;
-          console.log("focused", is_focused);
-        }
-      } else {
-        window_focused = false;
-      }
+  // fetch file contents | read file
+  filepath.then(path => {
+    let fetched_file_data: Promise<string | null> = invoke("read_file", {
+      filepath: path,
     });
 
+    // assign file_contents to retrieved_text
+    fetched_file_data.then((file_contents) => {
+      contentEditable = document.getElementById("textarea");
+      if (file_contents != null && contentEditable) {
+        contentEditable.innerText = file_contents;
+      }
+    });
+  })
+}
 
-    let contentEditable = document.getElementById("textarea");
+// sets the filepath.
+async function getFilepath(): Promise<string | null> {
+  // open file explorer | fetch filepath
+  let fetchedFilepath = await open({
+    multiple: false,
+    directory: false,
+  });
+  return fetchedFilepath
+}
 
-    if (opened_file && contentEditable) {
-      contentEditable.innerText = retrieved_text;
-      opened_file = false;
+// parses text for saving
+async function parseText(): Promise<string> {
+  let raw_text: string = "";                                    // raw var 'field_text' contents
+  
+  raw_text = JSON.stringify(field_text);
+  raw_text = raw_text.slice(1, raw_text.length - 1);
+  raw_text = raw_text.replaceAll("<div>", "").replaceAll("</div>", "");
+  raw_text = raw_text.replaceAll(rawNewLines, rawNewLine);
+
+  raw_text = unraw(raw_text);
+  return raw_text
+}
+
+// fetches the html text (assigns var 'field_text')
+onkeydown = (key) => {
+  if (prevKey == "Control" && key.key == "s") {
+    // get filepath if null
+    if (filepath == null) {
+      console.log("getting filepath")
+      filepath = getFilepath()
     } 
 
+    // parse text contents
+    parsedText = parseText();
+    parsedText.then(parsed_text => {
+      field_text = parsed_text
+      console.log("ParsedTEXT")
+    })
 
-    // set innerText to contentEditable text
-    if (contentEditable != null) {
-      
-      inner_text = contentEditable.innerText // assinging 'innertText' to contents innerText
-      
-      field_text = inner_text
+    // overwrite file
+    filepath.then(path => {
+      invoke("overwrite_file", {
+        filepath: path,
+        text: field_text,
+      });
+    })
 
-      raw_text = JSON.stringify(field_text);
-      raw_text = raw_text.slice(1, raw_text.length-1) 
-      raw_text = raw_text.replaceAll("<div>", "").replaceAll("</div>","")
-      raw_text = raw_text.replaceAll(rawNewLines,rawNewLine)
-      
-    }  
+  }
+  prevKey = key.key
 
-    field_text = unraw(raw_text)
+  contentEditable = document.getElementById("textarea");
+  if (contentEditable) {
+      inner_text = contentEditable.innerText; // assinging 'innertText' to contents innerText
+      field_text = inner_text;
+  }
+}
+
+// timer
+setInterval(() => {
+  console.log(filepath);
+}, 1000);
 
 
-    console.log("Text:" + field_text); // current text
-
-
-    
-  }, 100);
 </script>
 
 <style>
