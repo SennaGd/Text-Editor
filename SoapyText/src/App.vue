@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // local imports
 import "./style.css";
-import { RemoveDoubleNewLines } from "./StringParser.ts"
+import { unraw } from "./unraw.ts"
 
 // package imports
 import { register } from "@tauri-apps/plugin-global-shortcut";
@@ -19,20 +19,18 @@ import { invoke } from "@tauri-apps/api/core";
 </template>
 
 <script lang="ts">
-  let innerText: string = ""            // text fetched from htmlElement 
-  let text: string = "";                // text inside input field
-  let prevText: string = "";            // previous text (prevent multiple prints)         
+  const rawNewLines: string = JSON.stringify('\n\n').slice(1,5)
+  const rawNewLine: string = JSON.stringify('\n').slice(1,3)
+
+  let inner_text: string = ""            // text fetched from htmlElement 
   let field_text: string = "";          // text of the input field
-  let previous_field_text: string = ""  // previous text of input field
-
-  let newText: string = "";             // parsed text for writing to file
+  let retrieved_text: string = "";      // text retreived from opened_file
   let raw_text: string = "";            // raw var 'field_text' contents
-  let saveCommandRan: boolean = false;  // save-command status
-  let windowFocused: boolean = false;     // window focused status
-  let openedFile: boolean = false;      // used for reading the file | if filepath is determined
-
+  let opened_file: boolean = false;      // checks if file has been opened
+  let window_focused: boolean = false;   // window focused status
   let filepath: string | null;          // func -> openfile (writes) to var 'filepath'
   
+
   // fetches the filepath.
   async function openfile() {
     // open file explorer | fetch filepath 
@@ -46,103 +44,74 @@ import { invoke } from "@tauri-apps/api/core";
       filepath: filepath,
     });
 
-    // insert text into 'contentEditable' | 
-    fetched_file_data.then((fileContents) => {
-      if (fileContents != null) {
-        console.log("fetched data from: ", filepath);
-        console.log("fetched data from: ", fileContents);
-        
-        // prevText = fileContents;
+    // assign file_contents to retrieved_text 
+    fetched_file_data.then((file_contents) => {
+      if (file_contents != null) {
+        opened_file = true;
+        retrieved_text = file_contents
       }
     });
-
-    openedFile = true;  
-  }
-
-  function checkHTMLElement(idName: string) {
-    if (document.getElementById(idName) != null){
-      return true
-    } else {
-      return false
-    }
   }
 
   // CTRL + S = SAVE | Write to file
   await register("CONTROL + KEYS", (event) => {
     // if windowFocused | allow shortcut action
-    if (windowFocused && filepath != null) {
+    if (window_focused && filepath != null) {
       // overwrite file
       invoke("overwrite_file", {
         filepath: filepath,
-        text: text,
+        text: field_text,
       });
-      
-      // saveCommandRan = true;
-  }});
+    }
+  });
 
   // runs every 100 updates.
   setInterval(() => {
     const focused = getCurrentWindow().isFocused();
 
     // if window is focused : enabled save keybind.
-    focused.then((isFocused) => {
-      if (isFocused) {
-        if (windowFocused == false) {
-          windowFocused = true;
-          console.log("focused", isFocused);
+    focused.then((is_focused) => {
+      if (is_focused) {
+        if (window_focused == false) {
+          window_focused = true;
+          console.log("focused", is_focused);
         }
       } else {
-        windowFocused = false;
+        window_focused = false;
       }
     });
 
 
+    let contentEditable = document.getElementById("textarea");
 
-    const contentEditable = document.getElementById("textarea")
+    if (opened_file && contentEditable) {
+      contentEditable.innerText = retrieved_text;
+      opened_file = false;
+    } 
 
+
+    // set innerText to contentEditable text
     if (contentEditable != null) {
-      field_text = contentEditable.innerHTML
       
+      inner_text = contentEditable.innerText // assinging 'innertText' to contents innerText
+      
+      field_text = inner_text
+
       raw_text = JSON.stringify(field_text);
       raw_text = raw_text.slice(1, raw_text.length-1) 
-      raw_text = raw_text.replaceAll("<br>", "")
-      raw_text = raw_text.replaceAll("<br>", "")
+      raw_text = raw_text.replaceAll("<div>", "").replaceAll("</div>","")
+      raw_text = raw_text.replaceAll(rawNewLines,rawNewLine)
       
-      field_text = JSON.parse(raw_text)            // Parsed text
-    }
+    }  
 
-    // check if contentEditable exists
-    if (contentEditable != null) {
-      innerText = contentEditable.innerText // assinging 'innertText' to contents innerText
-    }
-    
-    // if file selected
-<<<<<<< HEAD
-    if (openedFile) {
-=======
-    if (contentEditable != null && openedFile) {
-      contentEditable.innerText = field_text;
->>>>>>> 2c3fbb7f9cc22a816d69113ba2870f51b95103d5
-      console.log("File Openened")
-      innerText = prevText;
-      openedFile = false
-    }
-    
-<<<<<<< HEAD
-    // update prevText
-    // if (saveCommandRan == false) {
-      text = RemoveDoubleNewLines(innerText);
-    // } 
+    field_text = unraw(raw_text)
 
 
-    console.log("Text:" + JSON.stringify(text)); // current text
+    console.log("Text:" + field_text); // current text
 
-  }, 500);
-=======
 
     
   }, 100);
->>>>>>> 2c3fbb7f9cc22a816d69113ba2870f51b95103d5
 </script>
 
 <style>
