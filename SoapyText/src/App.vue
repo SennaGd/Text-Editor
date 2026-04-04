@@ -11,10 +11,13 @@ import { invoke } from "@tauri-apps/api/core";
 
 <template>
   <main class="main">
-    <div>
-      <button @click="openFile()">Open File</button>
+    <div id="header">
+      <button id="headerButton" @click="openFile()">Open</button>
     </div>
-    <p id="textarea" contenteditable spellCheck="false" />
+    <div id="container">
+      <p id="linecounter"></p>
+      <p id="textarea" contenteditable spellCheck="false" />
+    </div>
   </main>
 </template>
 
@@ -44,9 +47,8 @@ let prevKey: string = ""
 
 // puts file-contents to window
 async function openFile() {
-  if (filepath == null) {
-    filepath = getFilepath() // assign filepath
-  }
+  // assign filepath
+  filepath = getFilepath()
 
   // fetch file contents | read file
   filepath.then(path => {
@@ -121,10 +123,9 @@ onkeydown = (key) => {
   }
 }
 
-// timer
-setInterval(() => {
-  console.log(filepath);
-}, 1000);
+// // timer
+// setInterval(() => {
+// }, 1000);
 
 
 </script>
