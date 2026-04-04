@@ -6,9 +6,7 @@ html, body, #app {
     -ms-overflow-style: none; 
     scrollbar-width: none; 
 }
-#textarea {
-    height:95vh;
-}
+
 
 .main {
     height:fit-content;
@@ -43,12 +41,33 @@ html, body, #app {
 
 /* Container containing line count and input field */
 #container {
+    padding-top: 20px;
     display: flex;
+    background-color: #0f0911;
 }
 
-/* Linecounter */
-#linecounter {
+/* Linecount */
+#linecount {
+    line-height:22px;
     width:20px;
+    min-height:100000vh;
+    max-height: fit-content;
+    margin-top:21px;
+    
+    padding-top:10px;
+    padding-left:20px;
+    padding-right: 10px;
+    white-space: pre;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color:rgb(144, 51, 67);
+    text-align: right;
+    -webkit-user-select: none;
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+#linecount::selection {
+    background-color: transparent;
 }
 
 /* Input field */
@@ -65,12 +84,10 @@ html, body, #app {
     font-size: large;
     border: none;
     outline: none;
-    background-color: #0f0911;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     border: transparent;
     margin-top:20px;
     padding-top:10px;
     padding-left:20px;
     white-space: pre;
-
 }

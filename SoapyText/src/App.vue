@@ -15,7 +15,7 @@ import { invoke } from "@tauri-apps/api/core";
       <button id="headerButton" @click="openFile()">Open</button>
     </div>
     <div id="container">
-      <p id="linecounter"></p>
+      <div id="linecount"></div>
       <p id="textarea" contenteditable spellCheck="false" />
     </div>
   </main>
@@ -33,6 +33,10 @@ let field_text: string = "";                                  // text of the inp
 let parsedText: Promise<string>;                              // text that will be saved
 let contentEditable = document.getElementById("textarea");    // textarea
 
+// linecount vars
+let line_height: number = 20;                                 // height of each line
+let number_of_lines: number = 0;                               // total number calculated by size of inputfield/line_height
+let lines_list: string = ""
 // file vars
 let filepath: Promise<string | null>;                         // func -> openfile (writes) to var 'filepath'
 
@@ -89,6 +93,22 @@ async function parseText(): Promise<string> {
   return raw_text
 }
 
+contentEditable = document.getElementById("textarea");
+if (contentEditable) {
+  console.log("lines")
+  let totalLines: number = contentEditable.scrollHeight/line_height
+  // 30000 lines
+  for (let i = 0; i < totalLines/20; i++) {
+    lines_list += i+1+"\n";
+    number_of_lines += 1;
+  }
+
+  console.log(number_of_lines)
+  
+}
+
+
+
 // fetches the html text (assigns var 'field_text')
 onkeydown = (key) => {
   if (prevKey == "Control" && key.key == "s") {
@@ -113,15 +133,25 @@ onkeydown = (key) => {
       });
     })
 
+    if (contentEditable) {
+      inner_text = contentEditable.innerText; // assinging 'innertText' to contents innerText
+      field_text = inner_text;
+    }
   }
   prevKey = key.key
 
   contentEditable = document.getElementById("textarea");
-  if (contentEditable) {
-      inner_text = contentEditable.innerText; // assinging 'innertText' to contents innerText
-      field_text = inner_text;
+
+  
+  let linecount = document.getElementById("linecount");
+
+  if (linecount) {
+    console.log("linecount is real", lines_list)
+    console.log(linecount)
+    linecount.innerText = lines_list
   }
 }
+
 
 // // timer
 // setInterval(() => {
