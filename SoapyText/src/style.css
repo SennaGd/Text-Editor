@@ -1,5 +1,5 @@
 html, body, #app {
-    background-color: rgb(0, 0, 0);
+    background-color: rgb(117, 117, 117);
     margin: 0px;
     width: 100%;
     height: 100%;
@@ -10,6 +10,8 @@ html, body, #app {
 
 .main {
     height:fit-content;
+    display: flexbox;
+    flex-direction: row;
 }
 
 
@@ -39,15 +41,42 @@ html, body, #app {
     background-color: rgba(40, 40, 40, 0.35);
 }
 
+#footer {
+    -webkit-user-select: none;
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none;
+    position:fixed;
+    bottom:0px;
+    width: 100%;
+    height:30px;
+    background-color: rgb(18, 18, 18);
+    display: flex;
+    align-items: center;
+}
+/* selected file | inside footer */
+#selectedFile {
+    color: #b1b1b1;
+    padding-left: 10px;
+}
+#selectedFile:hover{
+    color: white;
+
+}
+
 /* Container containing line count and input field */
 #container {
-    padding-top: 20px;
+    height:100%;
     display: flex;
-    background-color: #0f0911;
+    /* background-color: #0f0911; */
+    background-color: black;
+    color: gray;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+
 }
 
 /* Linecount */
 #linecount {
+    z-index: 2;
     line-height:22px;
     width:20px;
     min-height:100000vh;
@@ -58,9 +87,8 @@ html, body, #app {
     padding-left:20px;
     padding-right: 10px;
     white-space: pre;
-    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     color:rgb(144, 51, 67);
-    text-align: right;
+    
     -webkit-user-select: none;
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
@@ -72,19 +100,16 @@ html, body, #app {
 
 /* Input field */
 #textarea::selection {
-    background-color: rgba(122, 62, 107, 0.458);;
+    background-color: rgba(122, 62, 107, 0.458);
 }
 
 #textarea {
     line-height:22px;
     width:1000vw;
-    min-height:100000vh;
-    max-height: fit-content;
-    color:rgb(255, 255, 255);
+    color:rgb(255, 174, 205);
     font-size: large;
     border: none;
     outline: none;
-    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     border: transparent;
     margin-top:20px;
     padding-top:10px;
