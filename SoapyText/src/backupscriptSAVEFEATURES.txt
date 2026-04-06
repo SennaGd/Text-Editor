@@ -1,0 +1,111 @@
+// <script lang="ts">
+
+
+// //--------------------------------------------- Logic ---------------------------------------------\\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // onkeyup = (key) => {
+// //   // reset ctrl on release
+// //   if (key.key == prev_key) {
+// //     prev_key = ""
+// //     // console.log(prev_key, key.key)
+// //   } 
+// //   content_editable = document.getElementById("textarea");
+// //   if (content_editable) {
+// //     number_of_lines = content_editable.children.length
+// //   }
+// //   // TODO: fix linecounter
+// //   lines_list = "" // reset linesList
+
+// //   // prevent 0 lines
+// //   if (number_of_lines == 0){
+// //     number_of_lines = 1
+// //   }
+
+// //   for (let i = 0; i <= number_of_lines; i++) {
+// //     lines_list+=i+1+"\n"
+// //   }
+// // }
+
+// // onkeydown = (key) => {
+// //   let textarea = (<HTMLInputElement>document.getElementById("textarea"));
+// //   if(key.key == "Tab") {
+// //     console.log(textarea.value[cursor_pos_index])
+
+
+// //   }
+// //   // save keybind
+
+// //   if (prev_key == "Control" && key.key == "s") {
+
+
+
+
+// //   // update inner_text on every key press
+  
+// //   let cursor_pos = document.querySelector('textarea');
+// //   if (textarea) {
+// //     inner_text = textarea.value
+// //     field_text = inner_text
+// //     // number_of_lines = textarea.value.length
+// //   }
+// //   if (cursor_pos){
+// //     console.log(cursor_pos.selectionStart)
+// //   }
+
+// //   lines_list = "" // reset linesList
+
+// //   // prevent 0 lines
+// //   if (number_of_lines == 0){
+// //     number_of_lines = 1
+// //   }
+
+// //   for (let i = 0; i <= number_of_lines; i++) {
+// //     lines_list+=i+1+"\n"
+// //   }
+
+
+  
+
+
+
+// //   prev_key = key.key
+// // }
+
+  
+
+
+
+// // totalLines returned by func 'getLineCount'
+// // for (let i = 0; i < totalLines/20; i++) {
+// //       lines_list += i+1+"\n";
+// //       number_of_lines += 1;
+// //     }  
+// // let linecount = document.getElementById("linecount");
+
+// // if (linecount != null && set_linecount == false) {
+// //   console.log(linecount)
+// //   linecount.innerText = lines_list
+
+// //   if (linecount.innerText == lines_list){
+// //     set_linecount = true
+    
+// //   }
+// // }
+
+
+
+
+// </script>

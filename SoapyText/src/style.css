@@ -69,7 +69,7 @@ html, body, #app {
     display: flex;
     /* background-color: #0f0911; */
     background-color: black;
-    color: gray;
+    color: transparent;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 
 }
@@ -88,7 +88,7 @@ html, body, #app {
     padding-right: 10px;
     white-space: pre;
     color:rgb(144, 51, 67);
-    
+    background-color: transparent;
     -webkit-user-select: none;
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
@@ -104,6 +104,7 @@ html, body, #app {
 }
 
 #textarea {
+    background-color: rgba(128, 128, 128, 0);
     line-height:22px;
     width:1000vw;
     color:rgb(255, 174, 205);

@@ -7,6 +7,9 @@ import { unraw } from "./unraw.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
+
+let textareas = document.getElementsByTagName("textarea"); // Tag textarea EVERY TEXTAREA
+let count = textareas.length; // length of textarea's text
 </script>
 
 <template>
@@ -17,7 +20,9 @@ import { invoke } from "@tauri-apps/api/core";
 
     <div id="container">
       <div name="linecount" id="linecount"></div>
-      <p id="textarea" contenteditable spellCheck="false" />
+      <textarea id="textarea"></textarea>
+
+
     </div>
 
     <div id="footer">
@@ -28,20 +33,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 <script lang="ts">
 //-------------------------------------------- Variables -------------------------------------------\\
-// text parsing vars
-const raw_newlines: string = JSON.stringify("\n\n").slice(1, 5);
-const raw_newline: string = JSON.stringify("\n").slice(1, 3);
-
 // input field vars
-let inner_text: string = "";                                  // text fetched from htmlElement
-let field_text: string = "";                                  // text of the input field
-let parsed_text: Promise<string>;                             // text that will be saved
-let content_editable = document.getElementById("textarea");   // textarea
-
-// linecount vars
-let line_height: number = 20;                                 // height of each line
-let number_of_lines: number;                                  // used to check if there are new lines
-let lines_list: string = ""                                   // list containing all lines | written to id: linecount
 
 // file vars
 let filepath: string | null;                                  // func -> openfile (writes) to var 'filepath'
@@ -53,8 +45,8 @@ let window_focused: boolean = false;                          // window focused 
 // input vars | eventlisteners
 let prev_key: string = ""                                     // previous key value | used to check new_key -> prev_key
 
-//--------------------------------------------- Logic ---------------------------------------------\\
 
+//--------------------------------------------- Logic ---------------------------------------------\\
 // puts file-contents to window
 async function openFile() {
   // assign filepath
@@ -73,13 +65,13 @@ async function openFile() {
             selectedFile.innerText = filepath
           }
     }
-
     // sets textarea's text to retrieved_text from opened file
     fetched_file_data.then((retrieved_text) => {
-      content_editable = document.getElementById("textarea");
+      let textarea = (<HTMLInputElement>document.getElementById("textarea"));
+
       // check if opened file's text is valid
-      if (retrieved_text != null && content_editable) {
-        content_editable.innerText = retrieved_text;
+      if (retrieved_text != null && textarea) {
+        textarea.value = retrieved_text;
       }
     });
   })
@@ -95,179 +87,88 @@ async function getFilepath(): Promise<string | null> {
   return fetchedFilepath
 }
 
-// parses text for saving
-async function parseText(): Promise<string> {
-  let raw_text: string = "";                                    // raw var 'field_text' contents
-  // parse field_text from 'textarea'
-  raw_text = JSON.stringify(field_text);
-  raw_text = raw_text.slice(1, raw_text.length - 1);
-  raw_text = raw_text.replaceAll("<div>", "").replaceAll("</div>", "");
-  raw_text = raw_text.replaceAll(raw_newlines, raw_newline);
+// // parses text for saving
+// async function parseText(textarea_value: string): Promise<string> {
+//   let raw_text: string = "";                                    // raw var 'field_text' contents
+//   // parse field_text from 'textarea'
+//   textarea_value = JSON.stringify(textarea_value);
+//   raw_text = raw_text.slice(1, raw_text.length - 1);
+//   raw_text = raw_text.replaceAll(raw_newlines, raw_newline);
 
-  raw_text = unraw(raw_text);
-  return raw_text
+//   raw_text = unraw(raw_text);
+//   return raw_text
+// }
+
+function writeToFile(path: string, contents: string) {
+  invoke("overwrite_file", {
+    "filepath": path,
+    "text": contents,
+  })
+}
+
+async function saveContents(file_contents: string) {
+  let selectedFile = document.getElementById("selectedFile")
+
+  if (selectedFile && filepath != null) {
+    writeToFile(filepath, file_contents)
+    selectedFile.innerText = `Written to: ${filepath}.`
+  }
+  else {
+    try {
+      filepath = await getFilepath()
+      if (selectedFile && filepath != null) {
+        writeToFile(filepath, file_contents)
+        selectedFile.innerText = `Written to: ${filepath}.`
+      }
+    } 
+    
+    catch(error) {
+      if (selectedFile){
+        selectedFile.innerText = `Failed to write to: ${filepath}! Please select an existing file.`
+      }
+    }
+  }
 }
 
 
-
-  
-
-
+// Reset keys for shortcuts
 onkeyup = (key) => {
-  // reset ctrl on release
-  if (key.key == prev_key) {
+  if (key.key == prev_key){
     prev_key = ""
-    // console.log(prev_key, key.key)
-  } 
-  content_editable = document.getElementById("textarea");
-  if (content_editable) {
-    number_of_lines = content_editable.children.length
-  }
-
-  // 0 1
-  lines_list = "" // reset linesList
-
-  // prevent 0 lines
-  if (number_of_lines == 0){
-    number_of_lines = 1
-  }
-
-  for (let i = 0; i <= number_of_lines; i++) {
-    lines_list+=i+1+"\n"
   }
 }
-
 
 
 onkeydown = (key) => {
-  // save keybind
-  let selectedFile = document.getElementById("selectedFile")
-  if (prev_key == "Control" && key.key == "s") {
-    parsed_text = parseText();
-    if (filepath == null) {
-      let fetched_file_path = getFilepath()
-      fetched_file_path.then(result => {
-        // only assign filepath if the result is an actual string
-        // saves to file | file overwrite
-        if (typeof(result) == "string"){
-          filepath = result
-          console.log(filepath)
+  let textareas = document.querySelector('textarea');
+  if(textareas != null) {
+    let cursorPos = textareas.selectionStart
 
-          // parse text contents
-          parsed_text.then(text => {
-            field_text = text
-            console.log("ParsedTEXT")
-          })
-
-          // overwrite file
-          invoke("overwrite_file", {
-            filepath: filepath,
-            text: field_text,
-          });
-
-          // change filepath's 
-          
-          if (selectedFile) {
-            selectedFile.innerText = `Written to: ${filepath}`
-          }
-        }
-      })
-    } else {
-      invoke(
-        "overwrite_file", {
-          filepath: filepath,
-          text: field_text,
-        });
-        if (selectedFile) {
-            selectedFile.innerText = `Saved to: ${filepath}`
-          }
-      }
-  }
-
-  // update inner_text on every key press
-  content_editable = document.getElementById("textarea");
-  if (content_editable) {
-    inner_text = content_editable.innerText
-    field_text = inner_text
+    console.log(key)
+    // keycode tab
+    if (key.keyCode == 9 || key.which == 9) {
+      key.preventDefault();
+      let behind: string = textareas.value.slice(0, cursorPos)
+      let infront: string = textareas.value.slice(cursorPos,  textareas.value.length)
     
-    number_of_lines = content_editable.children.length
+      textareas.value = behind + "    " + infront
+      textareas.selectionStart = textareas.value.length - infront.length
+      textareas.selectionEnd = textareas.value.length - infront.length
+    };
 
+    // keycode ctrl + s 
+    if (key.keyCode == 83 && prev_key == "Control"){   
+      console.log("save") 
+      saveContents(textareas.value)
+    }
   }
-  console.log("key: ", key.key)
-  console.log("\nlines"+number_of_lines+"\n\nParsed lines"+number_of_lines)
-
-  // 0 1
-  lines_list = "" // reset linesList
-
-  // prevent 0 lines
-  if (number_of_lines == 0){
-    number_of_lines = 1
-  }
-
-  for (let i = 0; i <= number_of_lines; i++) {
-    lines_list+=i+1+"\n"
-  }
- 
   
-
-
-  let linecount = document.getElementById("linecount");
-  if (linecount) {
-    linecount.innerText = lines_list
-  }  
-  
-  
-  
-
-
-
   prev_key = key.key
 }
 
-
-// fetch line count
-// setInterval(() => {
-//   content_editable = document.getElementById("textarea");
-
-//   if (set_linecount == false && content_editable != null) {
-//     number_of_lines = content_editable.scrollHeight/line_height
-//     for (let i = 0; i < number_of_lines/20; i++) {
-//       lines_list += i+1+"\n";
-//     }  
-//     set_linecount = true
-//   }
-  
-//   // stop the loop
-//   if (set_linecount) {
-//     console.log("clear interval & lines: ", number_of_lines)
-//     clearInterval(0)
-//   }
-// }, 10);
-  
-
-
-
-// totalLines returned by func 'getLineCount'
-// for (let i = 0; i < totalLines/20; i++) {
-//       lines_list += i+1+"\n";
-//       number_of_lines += 1;
-//     }  
-// let linecount = document.getElementById("linecount");
-
-// if (linecount != null && set_linecount == false) {
-//   console.log(linecount)
-//   linecount.innerText = lines_list
-
-//   if (linecount.innerText == lines_list){
-//     set_linecount = true
-    
-//   }
-// }
-
-
-
-
 </script>
+
+
 
 <style>
 :root {
