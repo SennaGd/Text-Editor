@@ -33,8 +33,6 @@ let count = textareas.length; // length of textarea's text
 
 <script lang="ts">
 //-------------------------------------------- Variables -------------------------------------------\\
-// input field vars
-
 // file vars
 let filepath: string | null;                                  // func -> openfile (writes) to var 'filepath'
 
