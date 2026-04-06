@@ -47,33 +47,51 @@ let prev_key: string = ""                                     // previous key va
 //--------------------------------------------- Logic ---------------------------------------------\\
 // puts file-contents to window
 async function openFile() {
+  let selectedFile = document.getElementById("selectedFile")
+  let textarea = (<HTMLInputElement>document.getElementById("textarea"));
   // assign filepath
-  let fetched_path_promise = getFilepath()
+  try {
+    filepath = await getFilepath()
 
-  // fetch file contents | read file
-  fetched_path_promise.then(path => {
-    let fetched_file_data: Promise<string | null> = invoke("read_file", {
-      filepath: path,
-    });
-    // check path type
-    if (typeof(path) == "string") {
-      filepath = path
-      let selectedFile = document.getElementById("selectedFile")
-          if (selectedFile) {
-            selectedFile.innerText = filepath
-          }
-    }
-    // sets textarea's text to retrieved_text from opened file
-    fetched_file_data.then((retrieved_text) => {
-      let textarea = (<HTMLInputElement>document.getElementById("textarea"));
-
+    if (selectedFile && filepath != null) {
+      let fetched_file_data: Promise<string | null> = invoke("read_file", {
+        filepath: filepath,
+      });
+      selectedFile.innerText = `Opened: ${filepath}.`
+      
+      fetched_file_data.then((retrieved_text) => {
+    
       // check if opened file's text is valid
       if (retrieved_text != null && textarea) {
         textarea.value = retrieved_text;
       }
     });
-  })
-}
+    } 
+  } 
+
+  catch(error){
+    console.error("")
+  }
+} 
+
+  // // fetch file contents | read file
+  
+
+  //   // check path type
+  //   if (typeof(filepath) == "string" && selectedFile) {
+      
+  //   }
+  //   // sets textarea's text to retrieved_text from opened file
+  //   fetched_file_data.then((retrieved_text) => {
+  //     let textarea = (<HTMLInputElement>document.getElementById("textarea"));
+
+  //     // check if opened file's text is valid
+  //     if (retrieved_text != null && textarea) {
+  //       textarea.value = retrieved_text;
+  //     }
+  //   });
+  // }
+
 
 
 async function getFilepath(): Promise<string | null> {
