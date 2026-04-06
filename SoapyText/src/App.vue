@@ -19,148 +19,121 @@ let count = textareas.length; // length of textarea's text
     </div>
 
     <div id="container">
-      <div name="linecount" id="linecount"></div>
+      <p name="linecount" id="linecount">1 <br>2</p>
       <textarea id="textarea"></textarea>
 
 
     </div>
 
     <div id="footer">
-      <p id="selectedFile">s</p>
+      <p id="selectedFile">No file opened.</p>
     </div>
   </main>
 </template>
 
 <script lang="ts">
-//-------------------------------------------- Variables -------------------------------------------\\
-// file vars
-let filepath: string | null;                                  // func -> openfile (writes) to var 'filepath'
+  //-------------------------------------------- Variables -------------------------------------------\\
+  // file vars
+  let filepath: string | null;                                  // func -> openfile (writes) to var 'filepath'
 
-// window vars | unused currently
-const focused = getCurrentWindow().isFocused();               // window focused state
-let window_focused: boolean = false;                          // window focused status
+  // window vars | unused currently
+  const focused = getCurrentWindow().isFocused();               // window focused state
+  let window_focused: boolean = false;                          // window focused status
 
-// input vars | eventlisteners
-let prev_key: string = ""                                     // previous key value | used to check new_key -> prev_key
+  // input vars | eventlisteners
+  let prev_key: string = ""                                     // previous key value | used to check new_key -> prev_key
 
 
-//--------------------------------------------- Logic ---------------------------------------------\\
-// puts file-contents to window
-async function openFile() {
-  let selectedFile = document.getElementById("selectedFile")
-  let textarea = (<HTMLInputElement>document.getElementById("textarea"));
-  // assign filepath
-  try {
-    filepath = await getFilepath()
-
-    if (selectedFile && filepath != null) {
-      let fetched_file_data: Promise<string | null> = invoke("read_file", {
-        filepath: filepath,
-      });
-      selectedFile.innerText = `Opened: ${filepath}.`
-      
-      fetched_file_data.then((retrieved_text) => {
-    
-      // check if opened file's text is valid
-      if (retrieved_text != null && textarea) {
-        textarea.value = retrieved_text;
-      }
-    });
-    } 
-  } 
-
-  catch(error){
-    console.error("")
-  }
-} 
-
-  // // fetch file contents | read file
+  //--------------------------------------------- Logic ---------------------------------------------\\
   
-
-  //   // check path type
-  //   if (typeof(filepath) == "string" && selectedFile) {
-      
-  //   }
-  //   // sets textarea's text to retrieved_text from opened file
-  //   fetched_file_data.then((retrieved_text) => {
-  //     let textarea = (<HTMLInputElement>document.getElementById("textarea"));
-
-  //     // check if opened file's text is valid
-  //     if (retrieved_text != null && textarea) {
-  //       textarea.value = retrieved_text;
-  //     }
-  //   });
-  // }
-
-
-
-async function getFilepath(): Promise<string | null> {
-  // open file explorer | fetch filepath
-  let fetchedFilepath = await open({
-    multiple: false,
-    directory: false,
-  });
-  return fetchedFilepath
-}
-
-// // parses text for saving
-// async function parseText(textarea_value: string): Promise<string> {
-//   let raw_text: string = "";                                    // raw var 'field_text' contents
-//   // parse field_text from 'textarea'
-//   textarea_value = JSON.stringify(textarea_value);
-//   raw_text = raw_text.slice(1, raw_text.length - 1);
-//   raw_text = raw_text.replaceAll(raw_newlines, raw_newline);
-
-//   raw_text = unraw(raw_text);
-//   return raw_text
-// }
-
-function writeToFile(path: string, contents: string) {
-  invoke("overwrite_file", {
-    "filepath": path,
-    "text": contents,
-  })
-}
-
-async function saveContents(file_contents: string) {
-  let selectedFile = document.getElementById("selectedFile")
-
-  if (selectedFile && filepath != null) {
-    writeToFile(filepath, file_contents)
-    selectedFile.innerText = `Written to: ${filepath}.`
-  }
-  else {
+  // puts file-contents to window
+  async function openFile() {
+    let selectedFile = document.getElementById("selectedFile")
+    let textarea = (<HTMLInputElement>document.getElementById("textarea"));
+    // assign filepath
     try {
       filepath = await getFilepath()
+
       if (selectedFile && filepath != null) {
-        writeToFile(filepath, file_contents)
-        selectedFile.innerText = `Written to: ${filepath}.`
-      }
+        let fetched_file_data: Promise<string | null> = invoke("read_file", {
+          filepath: filepath,
+        });
+        selectedFile.innerText = `Opened: ${filepath}.`
+        
+        fetched_file_data.then((retrieved_text) => {
+      
+        // check if opened file's text is valid
+        if (retrieved_text != null && textarea) {
+          textarea.value = retrieved_text;
+        }
+      });
+      } 
     } 
-    
-    catch(error) {
-      if (selectedFile){
-        selectedFile.innerText = `Failed to write to: ${filepath}! Please select an existing file.`
+
+    catch(error){
+      console.error("")
+    }
+  } 
+
+  async function getFilepath(): Promise<string | null> {
+    // open file explorer | fetch filepath
+    let fetchedFilepath = await open({
+      multiple: false,
+      directory: false,
+    });
+    return fetchedFilepath
+  }
+
+
+  function writeToFile(path: string, contents: string) {
+    invoke("overwrite_file", {
+      "filepath": path,
+      "text": contents,
+    })
+  }
+
+  async function saveContents(file_contents: string) {
+    let selectedFile = document.getElementById("selectedFile")
+
+    if (selectedFile && filepath != null) {
+      writeToFile(filepath, file_contents)
+      selectedFile.innerText = `Written to: ${filepath}.`
+    }
+    else {
+      try {
+        filepath = await getFilepath()
+        if (selectedFile && filepath != null) {
+          writeToFile(filepath, file_contents)
+          selectedFile.innerText = `Written to: ${filepath}.`
+        }
+      } 
+      
+      catch(error) {
+        if (selectedFile){
+          selectedFile.innerText = `Failed to write to: ${filepath}! Please select an existing file.`
+        }
       }
     }
   }
-}
 
 
-// Reset keys for shortcuts
-onkeyup = (key) => {
-  if (key.key == prev_key){
-    prev_key = ""
+  // Reset keys for shortcuts
+  onkeyup = (key) => {
+    if (key.key == prev_key){
+      prev_key = ""
+    }
   }
-}
 
 
-onkeydown = (key) => {
-  let textareas = document.querySelector('textarea');
-  if(textareas != null) {
+  onkeydown = (key) => {
+    let textareas = document.querySelector('textarea');
+    if (textareas == null) {
+      console.error("textarea is null!")
+      return;
+    }
+
     let cursorPos = textareas.selectionStart
 
-    console.log(key)
     // keycode tab
     if (key.keyCode == 9 || key.which == 9) {
       key.preventDefault();
@@ -177,10 +150,12 @@ onkeydown = (key) => {
       console.log("save") 
       saveContents(textareas.value)
     }
+
+    prev_key = key.key
   }
   
-  prev_key = key.key
-}
+  
+  
 
 </script>
 

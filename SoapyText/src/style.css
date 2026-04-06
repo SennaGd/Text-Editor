@@ -35,6 +35,7 @@ html, body, #app {
     background-color: transparent;
     padding-left: 10px;
     padding-right: 10px;
+    border-radius: 0px;
 }
 #headerButton:hover {
     border: 0px, solid, transparent;
@@ -77,17 +78,17 @@ html, body, #app {
 /* Linecount */
 #linecount {
     z-index: 2;
-    line-height:22px;
+    line-height:20px;
     width:20px;
     min-height:100000vh;
     max-height: fit-content;
     margin-top:21px;
     
-    padding-top:10px;
+    padding-top:20px;
     padding-left:20px;
     padding-right: 10px;
     white-space: pre;
-    color:rgb(144, 51, 67);
+    color:rgb(146, 146, 146);
     background-color: transparent;
     -webkit-user-select: none;
     -ms-user-select: none; /* IE 10 and IE 11 */
@@ -105,15 +106,17 @@ html, body, #app {
 
 #textarea {
     background-color: rgba(128, 128, 128, 0);
-    line-height:22px;
+    line-height:20px;
     width:1000vw;
-    color:rgb(255, 174, 205);
+    
     font-size: large;
     border: none;
     outline: none;
     border: transparent;
     margin-top:20px;
-    padding-top:10px;
+    padding-top:20px;
     padding-left:20px;
     white-space: pre;
+
+    color:rgb(126, 250, 250);
 }
