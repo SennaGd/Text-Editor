@@ -29,6 +29,7 @@ export async function openFile() {
   }
 }
 
+// invoke from rust | getting filepath
 async function getFilepath(): Promise<string | null> {
   // open file explorer | fetch filepath
   let fetchedFilepath = await open({
@@ -38,6 +39,7 @@ async function getFilepath(): Promise<string | null> {
   return fetchedFilepath;
 }
 
+// invoke from rust | writing to file
 function writeToFile(path: string, contents: string) {
   invoke("overwrite_file", {
     filepath: path,
@@ -45,20 +47,24 @@ function writeToFile(path: string, contents: string) {
   });
 }
 
+// writing file contents
 export async function saveContents(file_contents: string) {
-  let selectedFile = document.getElementById("selectedFile");
+  let selectedFile = document.getElementById("selectedFile"); 
 
   if (selectedFile && filepath != null) {
     writeToFile(filepath, file_contents);
     selectedFile.innerText = `Written to: ${filepath}.`;
-  } else {
+  } 
+  else {
     try {
       filepath = await getFilepath();
+
       if (selectedFile && filepath != null) {
         writeToFile(filepath, file_contents);
         selectedFile.innerText = `Written to: ${filepath}.`;
       }
-    } catch (error) {
+    } 
+    catch (error) {
       if (selectedFile) {
         selectedFile.innerText = `Failed to write to: ${filepath}! Please select an existing file.`;
       }
@@ -66,14 +72,7 @@ export async function saveContents(file_contents: string) {
   }
 }
 
-// // removes 2 spaces from left
-// export function shiftTab(textarea: HTMLTextAreaElement) {
-// //   let char_index: number = 0; // first character after spaces from cursor
-
-//   if (textarea) {
-
-// }
-
+// shift + tab for removing line spaces
 export function shiftTab(textarea: HTMLTextAreaElement) {
   if (textarea) {
     let text_length = textarea.value.length;
@@ -82,8 +81,8 @@ export function shiftTab(textarea: HTMLTextAreaElement) {
     let right_spaces = 0; // total amount of right spaces to be removed
     let left_spaces = 0; // total amount of left spaces to be removed
     let newline_index: number = 0;
-
     let new_selection = textarea.selectionStart;
+    let has_removed = false;
 
     // check for right spaces
     for (let i = selection; i < text_length; i++) {
@@ -113,13 +112,15 @@ export function shiftTab(textarea: HTMLTextAreaElement) {
       new_selection - 1;
       parsed_line = textarea.value.slice(selection, selection + right_spaces);
       textarea.value = textarea.value.replace(line, parsed_line);
+      has_removed = true
     }
     // remove 1 right space | uneven -> even
-    if (right_spaces % 2 != 0 && right_spaces >= 1) {
+    if (right_spaces % 2 != 0 && right_spaces >= 1 && has_removed == false) {
       right_spaces -= 1;
       new_selection - 1;
       parsed_line = textarea.value.slice(selection, selection + right_spaces);
       textarea.value = textarea.value.replace(line, parsed_line);
+      has_removed = true
     }
 
     
@@ -136,21 +137,23 @@ export function shiftTab(textarea: HTMLTextAreaElement) {
     }
     console.log(left_spaces);
 
-    // console.log(parsed_line, left_spaces)
-    if (left_spaces % 2 == 0 && left_spaces >= 2) {
+    
+    if (left_spaces % 2 == 0 && left_spaces >= 2 && has_removed == false) {
       textarea.value = textarea.value.replace(
         parsed_line,
         parsed_line.slice(2),
       );
       new_selection -= 2;
+      has_removed = true
     }
 
-    if (left_spaces % 2 != 0 && left_spaces >= 1) {
+    if (left_spaces % 2 != 0 && left_spaces >= 1 && has_removed == false) {
       textarea.value = textarea.value.replace(
         parsed_line,
         parsed_line.slice(1),
       );
       new_selection -= 1;
+      has_removed = true
     }
 
     (textarea.selectionStart, (textarea.selectionEnd = new_selection));

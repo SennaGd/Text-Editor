@@ -44,7 +44,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
   // input vars | eventlisteners
   let prev_key: string = ""                                   // previous key value rests after release
-
+  let toggled_shift = false; 
 
 
   //----------------------------------------------- INIT ---------------------------------------------\\
@@ -59,7 +59,10 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
     if (key.key == prev_key){
       prev_key = ""
     }
-
+    // toggle shift
+    if (key.key == "Shift") {
+      toggled_shift = false
+    }
     // fetch newlines
     if (key.key == "Enter" || "Backspace"|| "Delete") {
       getLineCount()
@@ -88,16 +91,13 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
       let behind: string = textareas.value.slice(0, cursorPos)
       let infront: string = textareas.value.slice(cursorPos,  textareas.value.length)
       let indices = []
+      
       // if not shift + tab | normal tab
-      if (prev_key == "") {
+      if (toggled_shift == false) {
         textareas.value = behind + "    " + infront
         textareas.selectionStart = textareas.value.length - infront.length
         textareas.selectionEnd = textareas.value.length - infront.length
-      }
-
-
-
-      if (prev_key == "Shift") {
+      } else {
         shiftTab(textareas)
       }
     };
@@ -108,8 +108,12 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
       saveContents(textareas.value)
     }
 
+    if (key.key == "Shift") {
+      toggled_shift = true
+    }
     prev_key = key.key
-    shiftTab()
+    
+    
 
   }
 
