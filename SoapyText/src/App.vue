@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // local imports
 import "./style.css";
-import {saveContents, openFile, getWordCount} from "./file.ts";
+import {saveContents, openFile, getWordCount, getLineCount, shiftTab} from "./file.ts";
 
 // package imports
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -15,8 +15,8 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
     </div>
 
     <div id="container">
-      <p name="linecount" id="linecount">1 <br>2</p>
-      <textarea id="textarea"></textarea>
+      <p name="linecount" id="linecount"></p>
+      <textarea id="textarea" spellCheck="false"></textarea>
 
 
     </div>
@@ -29,24 +29,45 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 </template>
 
 <script lang="ts">
+
+
+
+
   //----------------------------------------------- TODO ---------------------------------------------\\
 
   // shift-tab (back-tab) 
 
   //-------------------------------------------- Variables -------------------------------------------\\
   // window vars | unused currently
-  const focused = getCurrentWindow().isFocused();               // window focused state
-  let window_focused: boolean = false;                          // window focused status
+  const focused = getCurrentWindow().isFocused();             // window focused state
+  let window_focused: boolean = false;                        // window focused status
 
   // input vars | eventlisteners
-  let prev_key: string = ""                                     // previous key value | used to check new_key -> prev_key
+  let prev_key: string = ""                                   // previous key value rests after release
 
+
+
+  //----------------------------------------------- INIT ---------------------------------------------\\
+  
 
   //--------------------------------------------- Logic ---------------------------------------------\\
+
+
   // Reset keys for shortcuts
   onkeyup = (key) => {
+    // prevent accidental shortcuts
     if (key.key == prev_key){
       prev_key = ""
+    }
+
+    // fetch newlines
+    if (key.key == "Enter" || "Backspace"|| "Delete") {
+      getLineCount()
+    }
+
+    // only fetch word count on "space", "tab", "enter" or "delete"
+    if (key.key == "Space" || "Tab"|| "Enter" || "Delete") {
+      getWordCount()
     }
   }
 
@@ -63,12 +84,22 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
     // keycode tab
     if (key.keyCode == 9 || key.which == 9) {
       key.preventDefault();
+      
       let behind: string = textareas.value.slice(0, cursorPos)
       let infront: string = textareas.value.slice(cursorPos,  textareas.value.length)
-    
-      textareas.value = behind + "    " + infront
-      textareas.selectionStart = textareas.value.length - infront.length
-      textareas.selectionEnd = textareas.value.length - infront.length
+      let indices = []
+      // if not shift + tab | normal tab
+      if (prev_key == "") {
+        textareas.value = behind + "    " + infront
+        textareas.selectionStart = textareas.value.length - infront.length
+        textareas.selectionEnd = textareas.value.length - infront.length
+      }
+
+
+
+      if (prev_key == "Shift") {
+        shiftTab(textareas)
+      }
     };
 
     // keycode ctrl + s 
@@ -78,10 +109,11 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
     }
 
     prev_key = key.key
+    shiftTab()
 
-    getWordCount()
   }
 
+  
 </script>
 
 

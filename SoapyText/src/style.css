@@ -89,7 +89,7 @@ footer:last-of-type {
     min-height:100000vh;
     max-height: fit-content;
     margin-top:21px;
-    
+    text-align: right;
     padding-top:20px;
     padding-left:20px;
     padding-right: 10px;
@@ -123,6 +123,7 @@ footer:last-of-type {
     padding-top:20px;
     padding-left:20px;
     white-space: pre;
+    
     
     color:rgb(0, 250, 250);
 }
