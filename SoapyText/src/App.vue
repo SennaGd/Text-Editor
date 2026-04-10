@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // local imports
 import "./style.css";
-import {saveContents, openFile, getWordCount, getLineCount, shiftTab} from "./file.ts";
+import {saveContents, openFile, getWordCount, getLineCount, shiftTab, openFolder} from "./file.ts";
 
 // package imports
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -12,11 +12,13 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
   <main class="main">
     <div id="header">
       <button id="headerButton" @click="openFile()">Open</button>  
+      <button id="headerButton" @click="openFolder()">Folder</button>  
     </div>
 
     <div id="container">
       <p name="linecount" id="linecount"></p>
-      <textarea id="textarea" spellCheck="false"></textarea>
+      <textarea id="textarea" spellCheck="false">Hello there
+  a     e</textarea>
 
 
     </div>
@@ -51,7 +53,6 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
   
 
   //--------------------------------------------- Logic ---------------------------------------------\\
-
 
   // Reset keys for shortcuts
   onkeyup = (key) => {
